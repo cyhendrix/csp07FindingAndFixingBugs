@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 7 Practice Lab - Finding and Fixing Bugs</title>
+<style>
+:root{--purple:#4a276b;--navy:#0b2b5b;--gold:#f2b526;--bg:#f5f7fb;--green:#1f8a45;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:#182230}
+header{background:linear-gradient(120deg,var(--purple),var(--navy));color:#fff;padding:24px}
+header h1{margin:0 0 5px}.wrap{max-width:920px;margin:auto;padding:22px}.card{background:#fff;border-radius:16px;padding:22px;margin:16px 0;box-shadow:0 3px 14px #0001}
+.pill{display:inline-block;background:#fff3cd;border:2px solid var(--gold);padding:6px 12px;border-radius:999px;font-weight:700}
+.q{border-top:1px solid #e4e7ec;padding:18px 0}.q:first-child{border-top:0}.choice{display:block;width:100%;text-align:left;margin:8px 0;padding:12px;border:2px solid #d0d5dd;border-radius:10px;background:#fff;font-size:16px;cursor:pointer}
+.choice.correct{border-color:var(--green);background:#ecfdf3}.choice.wrong{border-color:var(--red);background:#fef3f2}
+.feedback{font-weight:700;min-height:24px;margin-top:6px}.ok{color:var(--green)}.bad{color:var(--red)}
+button.next,button.check{background:var(--purple);color:#fff;border:0;border-radius:10px;padding:12px 18px;font-size:16px;font-weight:700;cursor:pointer}
+button.next{float:right}.hidden{display:none}textarea{width:100%;min-height:145px;font-family:Consolas,monospace;font-size:15px;padding:12px;border:2px solid #cfd4dc;border-radius:10px}
+.codehint{background:#eef4ff;border-left:5px solid var(--navy);padding:12px;border-radius:8px;margin:10px 0}.lesson{display:none}.lesson.active{display:block}
+.progress{height:10px;background:#e4e7ec;border-radius:8px;overflow:hidden}.bar{height:100%;background:var(--gold);width:25%}
+.clear{clear:both}.summary{font-size:20px;text-align:center}
+mark{background:#fff0a6;padding:0 3px;border-radius:3px}
+</style></head>
+<body>
+<header><div class="wrap"><h1>Chapter 7: Finding and Fixing Bugs</h1><div>Practice Lab • Lessons 1–3 • Immediate Feedback + Coding Checks</div></div></header>
+<div class="wrap">
+<div class="progress"><div class="bar" id="bar"></div></div>
+
+<section class="lesson active" id="l1"><div class="card"><span class="pill">Lesson 1 — Types of Errors</span>
+<h2>Identify the Bug</h2><div id="mc1"></div>
+<h2>Coding Practice</h2><p>This code should print <b>You can drive.</b> when age is 16 or older. Fix the syntax error.</p>
+<div class="codehint">Your fix should include the punctuation required at the end of an <code>if</code> statement.</div>
+<textarea id="code1">age = 17
+if age >= 16
+    print("You can drive.")</textarea>
+<button class="check" onclick="checkCode(1)">Check Coding Question</button><div class="feedback" id="cf1"></div>
+<button class="next" onclick="go(2)">Next: Lesson 2 →</button><div class="clear"></div></div></section>
+
+<section class="lesson" id="l2"><div class="card"><span class="pill">Lesson 2 — Troubleshooting Tools</span>
+<h2>Choose the Best Tool</h2><div id="mc2"></div>
+<h2>Coding Practice — Program Trace</h2><p>Add a temporary <code>print()</code> trace that displays the value of <code>total</code> before the final output.</p>
+<textarea id="code2">price = 10
+tax = 0.70
+total = price + tax
+
+print("Your total is:", total)</textarea>
+<button class="check" onclick="checkCode(2)">Check Coding Question</button><div class="feedback" id="cf2"></div>
+<button class="next" onclick="go(3)">Next: Lesson 3 →</button><div class="clear"></div></div></section>
+
+<section class="lesson" id="l3"><div class="card"><span class="pill">Lesson 3 — Python Debugger</span>
+<h2>Debugger Basics</h2><div id="mc3"></div>
+<h2>Coding Practice — Set a Breakpoint</h2><p>Complete the code so the Python debugger is enabled and the program pauses before <code>score = 10</code>.</p>
+<textarea id="code3"># add debugger import here
+
+# add breakpoint here
+score = 10
+bonus = 5
+total = score + bonus
+print(total)</textarea>
+<button class="check" onclick="checkCode(3)">Check Coding Question</button><div class="feedback" id="cf3"></div>
+<button class="next" onclick="go(4)">See Results →</button><div class="clear"></div></div></section>
+
+<section class="lesson" id="l4"><div class="card summary"><span class="pill">Practice Complete</span>
+<h2 id="score"></h2><p>Redo any missed multiple-choice items until they turn green. Make sure all three coding checks say correct.</p>
+<p><b>Then complete the Chapter 7 Exam.</b></p></div></section>
+</div>
+<script>
+const data={
+1:[
+["Which error means Python's writing rules are broken?",["Logic error","Syntax error","Runtime exception","Program trace"],1],
+["A program runs, but gives the wrong answer. What type of error is this?",["Logic error","Syntax error","Breakpoint","Overflow only"],0],
+["A runtime exception usually does what?",["Always fixes itself","Halts the program with an error message","Only changes a comment","Runs faster"],1],
+["If the line marked by the caret looks correct, where should you look next?",["Only below it","Earlier lines above it","At the last line only","Nowhere"],1]
+],
+2:[
+["Which is NOT a common troubleshooting tool from this chapter?",["Code review","Program tracing","Debugger","Oscilloscope"],3],
+["Python normally executes statements in what order?",["Bottom to top","Top to bottom","Longest first","Random order"],1],
+["A program trace is usually a temporary ____ statement.",["input()","print()","int()","format()"],1],
+["What can a trace show?",["Variable values","Whether a code block runs","Both of these","Neither"],2]
+],
+3:[
+["What state lets you inspect variables and step line-by-line?",["Running state","Break state","Safety state","Fast state"],1],
+["Which statement enables the debugger?",["use Debugger","import pdb","pdb.enable()","debug = True"],1],
+["Which sets the breakpoint used in this chapter?",["pdb.stop()","print('break')","pdb.set_trace()","pdb.fix()"],2],
+["Which command runs the next line and pauses again?",["continue (c)","step (s)","list (l)","fix (f)"],1],
+["Which command displays the value of mystery?",["p mystery","display mystery","? mystery","fix mystery"],0]
+]};
+let correct=0, answered={};
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function render(n){
+ const box=document.getElementById("mc"+n); box.innerHTML="";
+ data[n].forEach((q,qi)=>{
+   const d=document.createElement("div"); d.className="q";
+   const h=document.createElement("h3"); h.textContent=(qi+1)+". "+q[0]; d.appendChild(h);
+   let opts=q[1].map((t,i)=>({t,i})); shuffle(opts);
+   const fb=document.createElement("div"); fb.className="feedback";
+   opts.forEach(o=>{const b=document.createElement("button");b.className="choice";b.textContent=o.t;
+     b.onclick=()=>{if(o.i===q[2]){b.classList.add("correct");b.classList.remove("wrong");fb.textContent="✓ Correct — marked complete.";fb.className="feedback ok"; if(!answered[n+"-"+qi]){correct++;answered[n+"-"+qi]=1}}
+       else{b.classList.add("wrong");fb.textContent="Not yet. Review the clue and try again.";fb.className="feedback bad";setTimeout(()=>b.classList.remove("wrong"),700)}
+     }; d.appendChild(b)});
+   d.appendChild(fb);box.appendChild(d);
+ })
+}
+function checkCode(n){
+ let t=document.getElementById("code"+n).value, ok=false, msg="";
+ if(n===1){ok=/if\s+age\s*>=\s*16\s*:/.test(t);msg="Add a colon (:) after the if condition."}
+ if(n===2){let prints=(t.match(/print\s*\(/g)||[]).length; ok=prints>=2 && /print\s*\([^\n]*total/.test(t);msg='Add a temporary print() that displays total before the final output.'}
+ if(n===3){ok=/import\s+pdb/.test(t)&&/pdb\.set_trace\s*\(\s*\)/.test(t);msg="You need both: import pdb and pdb.set_trace()."}
+ let f=document.getElementById("cf"+n);f.textContent=ok?"✓ Coding check passed.":msg;f.className="feedback "+(ok?"ok":"bad");
+ if(ok) answered["code"+n]=1;
+}
+function go(n){document.querySelectorAll(".lesson").forEach(x=>x.classList.remove("active"));document.getElementById("l"+n).classList.add("active");document.getElementById("bar").style.width=(n*25)+"%";window.scrollTo(0,0);if(n===4){let total=13;document.getElementById("score").textContent="Multiple-choice mastered: "+correct+" / "+total;}}
+render(1);render(2);render(3);
+</script></body></html>
