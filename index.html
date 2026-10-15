@@ -18,11 +18,10 @@ button.next{float:right}.hidden{display:none}textarea{width:100%;min-height:145p
 .progress{height:10px;background:#e4e7ec;border-radius:8px;overflow:hidden}.bar{height:100%;background:var(--gold);width:25%}
 .clear{clear:both}.summary{font-size:20px;text-align:center}
 mark{background:#fff0a6;padding:0 3px;border-radius:3px}
-</style></head>
+nav button{margin:8px 6px 8px 0;padding:10px;border:0;border-radius:8px;background:#4a276b;color:white;cursor:pointer}nav button:disabled,.next:disabled{opacity:.45;cursor:not-allowed}input,select{padding:9px;margin:8px} .card button:not(.choice){margin:8px 5px;padding:10px;border-radius:8px}pre{white-space:pre-wrap}</style></head>
 <body>
 <header><div class="wrap"><h1>Chapter 7: Finding and Fixing Bugs</h1><div>Practice Lab • Lessons 1–3 • Immediate Feedback + Coding Checks</div></div></header>
-<div class="wrap">
-<div class="progress"><div class="bar" id="bar"></div></div>
+<div class="wrap"><section id="studentScreen" class="card"><h2>Student Information</h2><form id="studentForm"><label>First Name <input id="first" required></label> <label>Last Name <input id="last" required></label> <label>Class Period <select id="period" required><option value="">Select Period</option><option>1st Block</option><option>2nd Block</option><option>3rd Block</option><option>4th Block</option></select></label> <button type="submit" class="check">Begin Practice Lab</button></form></section><div id="labArea" class="hidden"><nav id="tabs"></nav><div class="progress"><div class="bar" id="bar"></div></div>
 
 <section class="lesson active" id="l1"><div class="card"><span class="pill">Lesson 1 — Types of Errors</span>
 <h2>Identify the Bug</h2><div id="mc1"></div>
@@ -31,8 +30,8 @@ mark{background:#fff0a6;padding:0 3px;border-radius:3px}
 <textarea id="code1">age = 17
 if age >= 16
     print("You can drive.")</textarea>
-<button class="check" onclick="checkCode(1)">Check Coding Question</button><div class="feedback" id="cf1"></div>
-<button class="next" onclick="go(2)">Next: Lesson 2 →</button><div class="clear"></div></div></section>
+<button class="check" onclick="checkCode(1)">Check Coding Question</button><div class="feedback" id="cf1"></div><div id="output1"></div>
+<button onclick="clearLesson(1)">Clear This Lesson</button> <button class="next" id="next1" onclick="go(2)" disabled>Next: Lesson 2 →</button><div class="clear"></div></div></section>
 
 <section class="lesson" id="l2"><div class="card"><span class="pill">Lesson 2 — Troubleshooting Tools</span>
 <h2>Choose the Best Tool</h2><div id="mc2"></div>
@@ -42,8 +41,8 @@ tax = 0.70
 total = price + tax
 
 print("Your total is:", total)</textarea>
-<button class="check" onclick="checkCode(2)">Check Coding Question</button><div class="feedback" id="cf2"></div>
-<button class="next" onclick="go(3)">Next: Lesson 3 →</button><div class="clear"></div></div></section>
+<button class="check" onclick="checkCode(2)">Check Coding Question</button><div class="feedback" id="cf2"></div><div id="output2"></div>
+<button onclick="clearLesson(2)">Clear This Lesson</button> <button class="next" id="next2" onclick="go(3)" disabled>Next: Lesson 3 →</button><div class="clear"></div></div></section>
 
 <section class="lesson" id="l3"><div class="card"><span class="pill">Lesson 3 — Python Debugger</span>
 <h2>Debugger Basics</h2><div id="mc3"></div>
@@ -55,13 +54,13 @@ score = 10
 bonus = 5
 total = score + bonus
 print(total)</textarea>
-<button class="check" onclick="checkCode(3)">Check Coding Question</button><div class="feedback" id="cf3"></div>
-<button class="next" onclick="go(4)">See Results →</button><div class="clear"></div></div></section>
+<button class="check" onclick="checkCode(3)">Check Coding Question</button><div class="feedback" id="cf3"></div><div id="output3"></div>
+<button onclick="clearLesson(3)">Clear This Lesson</button> <button class="next" id="next3" onclick="go(4)" disabled>See Results →</button><div class="clear"></div></div></section>
 
 <section class="lesson" id="l4"><div class="card summary"><span class="pill">Practice Complete</span>
-<h2 id="score"></h2><p>Redo any missed multiple-choice items until they turn green. Make sure all three coding checks say correct.</p>
+<h2 id="score"></h2><div id="breakdown"></div><p id="submitStatus"></p><button class="check" id="submitBtn" onclick="submitResults()">Submit Results</button><button onclick="resetAll()">Reset Answers</button><p>Redo any missed multiple-choice items until they turn green. Make sure all three coding checks say correct.</p>
 <p><b>Then complete the Chapter 7 Exam.</b></p></div></section>
-</div>
+</div></div>
 <script>
 const data={
 1:[
@@ -83,30 +82,126 @@ const data={
 ["Which command runs the next line and pauses again?",["continue (c)","step (s)","list (l)","fix (f)"],1],
 ["Which command displays the value of mystery?",["p mystery","display mystery","? mystery","fix mystery"],0]
 ]};
-let correct=0, answered={};
-function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+const KEY='csp07-progress',STUDENT='csp07-student-info',SENT='csp07-sent',PAGE='csp07-page';
+let saved={};try{saved=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+const attempts=saved.attempts||{},answers=saved.answers||{},orders=saved.orders||{},codes=saved.codes||{},passed=saved.passed||{};
+let current=Number(localStorage.getItem(PAGE))||1;
+function save(){localStorage.setItem(KEY,JSON.stringify({attempts,answers,orders,codes,passed}));}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a;}
+function qDone(n,i){return answers[n+'-'+i]===data[n][i][2]||(attempts[n+'-'+i]||0)>=2}
+function ready(n){return data[n].every((q,i)=>qDone(n,i))&&passed[n]===true}
+function allReady(){return [1,2,3].every(ready)}
 function render(n){
- const box=document.getElementById("mc"+n); box.innerHTML="";
- data[n].forEach((q,qi)=>{
-   const d=document.createElement("div"); d.className="q";
-   const h=document.createElement("h3"); h.textContent=(qi+1)+". "+q[0]; d.appendChild(h);
-   let opts=q[1].map((t,i)=>({t,i})); shuffle(opts);
-   const fb=document.createElement("div"); fb.className="feedback";
-   opts.forEach(o=>{const b=document.createElement("button");b.className="choice";b.textContent=o.t;
-     b.onclick=()=>{if(o.i===q[2]){b.classList.add("correct");b.classList.remove("wrong");fb.textContent="✓ Correct — marked complete.";fb.className="feedback ok"; if(!answered[n+"-"+qi]){correct++;answered[n+"-"+qi]=1}}
-       else{b.classList.add("wrong");fb.textContent="Not yet. Review the clue and try again.";fb.className="feedback bad";setTimeout(()=>b.classList.remove("wrong"),700)}
-     }; d.appendChild(b)});
-   d.appendChild(fb);box.appendChild(d);
- })
+ const box=document.getElementById('mc'+n);box.innerHTML='';
+ data[n].forEach((q,i)=>{
+  const id=n+'-'+i,d=document.createElement('div');d.className='q';
+  const h=document.createElement('h3');h.textContent=(i+1)+'. '+q[0];d.appendChild(h);
+  if(!orders[id])orders[id]=shuffle(q[1].map((_,j)=>j));
+  orders[id].forEach(j=>{
+   const button=document.createElement('button');button.className='choice';button.textContent=q[1][j];
+   button.disabled=qDone(n,i);
+   if(qDone(n,i)&&j===q[2])button.classList.add('correct');
+   button.onclick=()=>{if(qDone(n,i))return;attempts[id]=(attempts[id]||0)+1;answers[id]=j;save();render(n);nav()};
+   d.appendChild(button);
+  });
+  const f=document.createElement('div');f.className='feedback';
+  if(qDone(n,i)){f.textContent=answers[id]===q[2]?'✓ Correct.':'Two attempts used. Correct answer: '+q[1][q[2]];f.classList.add(answers[id]===q[2]?'ok':'bad')}
+  else if(attempts[id]){f.textContent='Incorrect. One more attempt.';f.classList.add('bad')}
+  d.appendChild(f);box.appendChild(d);
+ });save();
 }
-function checkCode(n){
- let t=document.getElementById("code"+n).value, ok=false, msg="";
- if(n===1){ok=/if\s+age\s*>=\s*16\s*:/.test(t);msg="Add a colon (:) after the if condition."}
- if(n===2){let prints=(t.match(/print\s*\(/g)||[]).length; ok=prints>=2 && /print\s*\([^\n]*total/.test(t);msg='Add a temporary print() that displays total before the final output.'}
- if(n===3){ok=/import\s+pdb/.test(t)&&/pdb\.set_trace\s*\(\s*\)/.test(t);msg="You need both: import pdb and pdb.set_trace()."}
- let f=document.getElementById("cf"+n);f.textContent=ok?"✓ Coding check passed.":msg;f.className="feedback "+(ok?"ok":"bad");
- if(ok) answered["code"+n]=1;
+function nav(){
+ for(let n=1;n<=3;n++)document.getElementById('next'+n).disabled=!ready(n);
+ document.getElementById('tabs').innerHTML=[1,2,3,4].map(n=>'<button '+(n===4&&!allReady()?'disabled':'')+' onclick="go('+n+')">'+(n===4?'Results':'Lesson '+n)+(n<=3&&ready(n)?' ✓':'')+'</button>').join(' ');
 }
-function go(n){document.querySelectorAll(".lesson").forEach(x=>x.classList.remove("active"));document.getElementById("l"+n).classList.add("active");document.getElementById("bar").style.width=(n*25)+"%";window.scrollTo(0,0);if(n===4){let total=13;document.getElementById("score").textContent="Multiple-choice mastered: "+correct+" / "+total;}}
-render(1);render(2);render(3);
+function go(n){
+ if(n===4&&!allReady())return;
+ current=n;localStorage.setItem(PAGE,String(n));
+ document.querySelectorAll('.lesson').forEach(x=>x.classList.remove('active'));
+ document.getElementById('l'+n).classList.add('active');document.getElementById('bar').style.width=(n*25)+'%';
+ if(n===4)showResults();nav();window.scrollTo(0,0);
+}
+function clearLesson(n){
+ if(!confirm('Clear all saved answers and code for Lesson '+n+'?'))return;
+ data[n].forEach((q,i)=>{delete attempts[n+'-'+i];delete answers[n+'-'+i];delete orders[n+'-'+i]});
+ delete passed[n];delete codes[n];document.getElementById('code'+n).value=document.getElementById('code'+n).defaultValue;
+ document.getElementById('cf'+n).textContent='';document.getElementById('output'+n).innerHTML='';
+ localStorage.removeItem(SENT);save();render(n);nav();
+}
+function resetAll(){if(confirm('Reset all Chapter 7 answers and coding work?')){localStorage.removeItem(KEY);localStorage.removeItem(SENT);localStorage.setItem(PAGE,'1');location.reload()}}
+let pythonPromise;
+function getPython(){
+ if(!pythonPromise)pythonPromise=new Promise((resolve,reject)=>{
+  if(window.loadPyodide){window.loadPyodide().then(resolve,reject);return;}
+  const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js';
+  script.onload=()=>window.loadPyodide().then(resolve,reject);script.onerror=()=>reject(Error('Python engine failed to load'));document.head.appendChild(script);
+ }).catch(e=>{pythonPromise=null;throw e});return pythonPromise;
+}
+function escapeHTML(v){return String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+async function checkCode(n){
+ const code=document.getElementById('code'+n).value,f=document.getElementById('cf'+n),output=document.getElementById('output'+n);
+ codes[n]=code;passed[n]=false;save();f.textContent='Running Python tests…';output.innerHTML='';
+ try{
+  const py=await getPython();
+  const harness=[
+  'import ast,io,contextlib,json',
+  'source='+JSON.stringify(JSON.stringify(code)),
+  'n='+n,
+  'report={"error":"","tests":[]}',
+  'try:',
+  ' tree=ast.parse(source)',
+  ' if n==3:',
+  '  imports=[x for x in tree.body if isinstance(x,ast.Import) and any(a.name=="pdb" for a in x.names)]',
+  '  breaks=[i for i,x in enumerate(tree.body) if isinstance(x,ast.Expr) and isinstance(x.value,ast.Call) and isinstance(x.value.func,ast.Attribute) and isinstance(x.value.func.value,ast.Name) and x.value.func.value.id=="pdb" and x.value.func.attr=="set_trace"]',
+  '  scores=[i for i,x in enumerate(tree.body) if isinstance(x,ast.Assign) and any(isinstance(t,ast.Name) and t.id=="score" for t in x.targets)]',
+  '  report["tests"].append({"label":"Debugger import and breakpoint before score assignment","pass":bool(imports and breaks and scores and breaks[0]<scores[0]),"output":"Breakpoint checked without opening interactive debugger"})',
+  ' else:',
+  '  for value in ([15,16,17] if n==1 else [10,20]):',
+  '   copy=ast.parse(source)',
+  '   for x in ast.walk(copy):',
+  '    if isinstance(x,ast.Assign):',
+  '     for t in x.targets:',
+  '      if isinstance(t,ast.Name) and t.id==("age" if n==1 else "price"):x.value=ast.Constant(value=value)',
+  '   ast.fix_missing_locations(copy)',
+  '   out=io.StringIO()',
+  '   with contextlib.redirect_stdout(out):',
+  '    exec(compile(copy,"<student>","exec"),{"__builtins__":{"print":print}})',
+  '   lines=[x.strip() for x in out.getvalue().splitlines() if x.strip()]',
+  '   if n==1:',
+  '    expected=["You can drive."] if value>=16 else []',
+  '    ok=lines==expected',
+  '   else:',
+  '    ok=len(lines)>=2 and "Your total is:" in lines[-1] and str(value+0.7) in lines[0] and str(value+0.7) in lines[-1]',
+  '   report["tests"].append({"label":("Age " if n==1 else "Price ")+str(value),"pass":ok,"output":out.getvalue().strip()})',
+  'except Exception as e:',
+  ' report["error"]=type(e).__name__+": "+str(e)',
+  'json.dumps(report)'
+  ].join('\n');
+  const result=JSON.parse(await py.runPythonAsync(harness));
+  const ok=!result.error&&result.tests.length===(n===3?1:n===1?3:2)&&result.tests.every(t=>t.pass);
+  passed[n]=ok;f.className='feedback '+(ok?'ok':'bad');f.textContent=ok?'✓ Coding passed all answer-key tests.':'Coding needs corrections. Review the output below.';
+  output.innerHTML=(result.error?'<p class="bad">'+escapeHTML(result.error)+'</p>':'')+result.tests.map(t=>'<div class="q">'+(t.pass?'✓ Passed':'✗ Needs correction')+' — '+escapeHTML(t.label)+'<pre>'+escapeHTML(t.output||'(no output)')+'</pre></div>').join('');
+ }catch(e){f.className='feedback bad';f.textContent='Python engine error: '+e.message}
+ save();nav();
+}
+function grade(){let earned=0,total=0;for(let n=1;n<=3;n++){data[n].forEach((q,i)=>{total++;if(answers[n+'-'+i]===q[2])earned++});total++;if(passed[n])earned++}return {earned,total,percent:Math.round(earned/total*100)}}
+function showResults(){const g=grade();document.getElementById('score').textContent='Score: '+g.percent+'% ('+g.earned+' / '+g.total+')';document.getElementById('breakdown').textContent=[1,2,3].map(n=>'Lesson '+n+': '+data[n].filter((q,i)=>answers[n+'-'+i]===q[2]).length+'/'+data[n].length+' correct; coding '+(passed[n]?'passed':'incomplete')).join(' | ');document.getElementById('submitStatus').textContent=localStorage.getItem(SENT)?'Grade submitted. Verify in the spreadsheet.':'Ready to submit.';document.getElementById('submitBtn').disabled=!!localStorage.getItem(SENT)}
+function submitResults(){
+ if(!allReady())return;const student=JSON.parse(localStorage.getItem(STUDENT)||'null');if(!student)return;
+ const frame=document.createElement('iframe');frame.name='csp07Submit';frame.hidden=true;document.body.appendChild(frame);
+ const form=document.createElement('form');form.method='POST';form.action='https://docs.google.com/forms/d/e/1FAIpQLSf9qAF0Ek04CLXOzReYWO-5YVDfY70LYoWWMLaLyC0bG70YUg/formResponse';form.target=frame.name;form.hidden=true;
+ const fields={'entry.2089413779':student.last+', '+student.first,'entry.890934651':student.period,'entry.646173439':'Chapter 07 | Finding and Fixing Bugs','entry.962158861':String(grade().percent)};
+ Object.entries(fields).forEach(([name,value])=>{const input=document.createElement('input');input.name=name;input.value=value;form.appendChild(input)});document.body.appendChild(form);
+ document.getElementById('submitBtn').disabled=true;document.getElementById('submitStatus').textContent='Submitting…';
+ let done=false;frame.addEventListener('load',()=>{done=true;localStorage.setItem(SENT,'1');form.remove();frame.remove();showResults()});form.submit();
+ setTimeout(()=>{if(!done){document.getElementById('submitBtn').disabled=false;document.getElementById('submitStatus').textContent='Could not confirm submission. Check spreadsheet before retrying.'}},12000);
+}
+const student=JSON.parse(localStorage.getItem(STUDENT)||'null');
+if(student){document.getElementById('first').value=student.first||'';document.getElementById('last').value=student.last||'';document.getElementById('period').value=student.period||''}
+function begin(){document.getElementById('studentScreen').classList.add('hidden');document.getElementById('labArea').classList.remove('hidden');go(current)}
+document.getElementById('studentForm').addEventListener('submit',e=>{e.preventDefault();const v={first:document.getElementById('first').value.trim(),last:document.getElementById('last').value.trim(),period:document.getElementById('period').value};if(!v.first||!v.last||!v.period)return;localStorage.setItem(STUDENT,JSON.stringify(v));sessionStorage.setItem('csp07-started','1');begin()});
+for(let n=1;n<=3;n++){const area=document.getElementById('code'+n);if(typeof codes[n]==='string')area.value=codes[n];area.addEventListener('input',()=>{codes[n]=area.value;passed[n]=false;document.getElementById('cf'+n).textContent='Code changed. Check again.';document.getElementById('output'+n).innerHTML='';save();nav()});render(n)}
+if(sessionStorage.getItem('csp07-started')==='1'&&student?.first&&student?.last&&student?.period)begin();
+nav();
 </script></body></html>
