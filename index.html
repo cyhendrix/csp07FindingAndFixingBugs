@@ -146,7 +146,7 @@ async function checkCode(n){
   const py=await getPython();
   const harness=[
   'import ast,io,contextlib,json',
-  'source='+JSON.stringify(JSON.stringify(code)),
+  'source='+JSON.stringify(code),
   'n='+n,
   'report={"error":"","tests":[]}',
   'try:',
